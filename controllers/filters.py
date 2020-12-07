@@ -6,6 +6,18 @@ from application.globals import KANWIL
 filters_blueprint = Blueprint('filters_blueprint', __name__)
 
 
+@filters_blueprint.route('/jenis_belanja', methods=['GET'])
+def perjenis_belanja():
+  perjenis_belanja = []
+
+  try:
+    perjenis_belanja = list(mongo.db.jenis_belanja.find(KANWIL))
+  except:
+    print('ERROR')
+
+  return dumps(perjenis_belanja)
+
+
 @filters_blueprint.route('/perkabupaten', methods=['GET'])
 def perkabupaten():
   perkabupaten = []

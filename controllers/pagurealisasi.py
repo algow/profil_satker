@@ -13,9 +13,9 @@ pagurealisasi_blueprint = Blueprint('pagurealisasi_blueprint', __name__)
 @pagurealisasi_blueprint.route('/pagurealisasi', methods=['GET'])
 def index():
   pagurealisasi = []
-  print(request.args.get('kode_satker'))
+
   try:
-    pagurealisasi = list(mongo.db.pagurealisasi.find({'kode_kanwil': 25, 'kode_satker': int(request.args.get('kode_satker'))}))
+    pagurealisasi = list(mongo.db.pagurealisasi.find({'kode_kanwil': request.args.get('kanwil'), 'kode_satker': request.args.get('kode_satker')}))
     # pagurealisasi = mongo.db.pagurealisasi.aggregate([
     #   { 
     #     '$match': KANWIL
@@ -46,11 +46,11 @@ def store():
   file = request.files['file_excel']
   filename = os.path.join('publics/', secure_filename(file.filename))
 
-  try:
-    file.save(filename)
-    store_pagu(filename)
-  except:
-    message['status'] = 'failed'
+  # try:
+  file.save(filename)
+  store_pagu(filename)
+  # except:
+  #   message['status'] = 'failed'
 
   message['file'] = filename
 

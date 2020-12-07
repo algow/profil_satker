@@ -5,7 +5,25 @@ def query_to_chart(elements):
   }
 
   for element in elements:
-    chart['label'].append(element['nama_kabupaten'][0])
-    chart['data'].append(element['realisasi'])
+    for key, value in element.items():
+      if key == 'realisasi':
+        chart['data'].append(value)
+      else:
+        if isinstance(value, list):
+          chart['label'].append(value[0])
+        else:
+          chart['label'].append(value)
 
+  return chart
+
+def total_to_chart(elements):
+  chart = {
+    'label': ['pagu', 'realisasi'],
+    'data': []
+  }
+
+  chart['data'].append(elements[0]['pagu'])
+  chart['data'].append(elements[0]['realisasi'])
+
+  print(chart)
   return chart
