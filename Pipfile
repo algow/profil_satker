@@ -11,6 +11,8 @@ flask-cors = "*"
 celery = "*"
 flask-pymongo = "*"
 pandas = "*"
+xlrd = "*"
+openpyxl = "*"
 
 [requires]
 python_version = "3.9"

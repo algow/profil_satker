@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify,request
 from bson.json_util import dumps
 from configs.mongodb import mongo
 from application.globals import KANWIL
@@ -27,6 +27,8 @@ def chart_jenisbelanja():
     chart_data = list(mongo.db.jenis_belanja.find(KANWIL, { '_id': 0, 'jenis': 1, 'realisasi': 1 }).sort('realisasi', -1))
   except:
     print('ERROR')
+
+  print(chart_data)
 
   return dumps(query_to_chart(chart_data))
 
@@ -77,5 +79,45 @@ def chart_kppn():
     }]))
   except:
     print('ERROR')
+
+  return dumps(query_to_chart(chart_data))
+
+
+@chart_blueprint.route('/jenisbelanja_persatker', methods=['GET'])
+def chart_jenisbelanja_persatker():
+  chart_data = []
+
+  # try:
+  chart_data = list(mongo.db.pagurealisasi.aggregate([
+  {
+    '$match': {
+      'kode_kanwil': request.args.get('kanwil'),
+      'kode_satker': request.args.get('satker')
+    }
+  },
+  {
+    '$project': {
+      'kode_satker': 1,
+      'realisasi': 1,
+      'pagu': 1,
+      'jenisbelanja': {
+        '$substr': ["$akun", 0, 2]
+      }
+    }
+  },
+  {
+    '$group': {
+      '_id': '$jenisbelanja',
+      'realisasi': {
+        '$sum': '$realisasi'
+      }
+    }
+  },
+  {
+    '$sort': { 'realisasi': 1 }
+  }
+  ]))
+  # except:
+  #   print('error')
 
   return dumps(query_to_chart(chart_data))

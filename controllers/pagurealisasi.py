@@ -16,20 +16,6 @@ def index():
 
   try:
     pagurealisasi = list(mongo.db.pagurealisasi.find({'kode_kanwil': request.args.get('kanwil'), 'kode_satker': request.args.get('kode_satker')}))
-    # pagurealisasi = mongo.db.pagurealisasi.aggregate([
-    #   { 
-    #     '$match': KANWIL
-    #   },
-    #   { 
-    #     '$group': { 
-    #       '_id': '$kode_satker',
-    #       'dipa': { '$sum': '$dipa' },
-    #       'blokir': { '$sum': '$blokir' },
-    #       'outs_kontrak': { '$sum': '$outs_kontrak' },
-    #       'realisasi': { '$sum': '$realisasi' },
-    #     }
-    #   }
-    # ])
   except:
     print('ERR')
 
