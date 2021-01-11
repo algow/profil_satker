@@ -2,6 +2,7 @@ import os
 from flask import Blueprint, jsonify, request
 from werkzeug.utils import secure_filename
 import pandas as pd
+import time
 from bson.json_util import dumps
 from configs.mongodb import mongo
 from tasks.pagurealisasi import store_pagu
@@ -32,11 +33,22 @@ def store():
   file = request.files['file_excel']
   filename = os.path.join('publics/', secure_filename(file.filename))
 
-  # try:
-  file.save(filename)
-  store_pagu(filename)
-  # except:
-  #   message['status'] = 'failed'
+  kanwil_exist = mongo.db.uploads.find({'kanwil': request.form.get('kanwil')})
+
+  if len(list(kanwil_exist)) > 0:
+    mongo.db.uploads.delete_many({'kanwil': request.form.get('kanwil')})
+
+  mongo.db.uploads.insert_one({
+    'kanwil': request.form.get('kanwil'),
+    'timestamp': time.time(),
+    'tanggal': request.form.get('tanggal')
+  })
+
+  try:
+    file.save(filename)
+    store_pagu(filename)
+  except:
+    message['status'] = 'failed'
 
   message['file'] = filename
 

@@ -16,7 +16,12 @@ def chart_total():
   except:
     print('ERROR')
 
-  return dumps(total_to_chart(chart_data))
+  persentase_realisasi = [{
+    'realisasi': chart_data[0]['realisasi'],
+    'pagu': chart_data[0]['pagu'] - chart_data[0]['realisasi']
+  }]
+  
+  return dumps(total_to_chart(persentase_realisasi))
 
 
 @chart_blueprint.route('/chart_jenisbelanja', methods=['GET'])
@@ -27,8 +32,6 @@ def chart_jenisbelanja():
     chart_data = list(mongo.db.jenis_belanja.find(KANWIL, { '_id': 0, 'jenis': 1, 'realisasi': 1 }).sort('realisasi', -1))
   except:
     print('ERROR')
-
-  print(chart_data)
 
   return dumps(query_to_chart(chart_data))
 
@@ -114,7 +117,7 @@ def chart_jenisbelanja_persatker():
     }
   },
   {
-    '$sort': { 'realisasi': 1 }
+    '$sort': { 'realisasi': -1 }
   }
   ]))
   # except:

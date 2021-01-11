@@ -39,7 +39,7 @@ def store_pagu(filename):
   perjenis_belanja['jenis'] = perjenis_belanja['akun'].apply(lambda x: 'Belanja Pegawai' if x == '51' else ('Belanja Barang' if x == '52' else ('Belanja Modal' if x == '53' else ('Belanja Bansos' if x == '57' else ('DAK Fisik' if x == '63' else ('DAK Nonfisik' if x == '65' else 'Dana Desa'))))))
 
   pagurealisasi_exist = mongo.db.pagurealisasi.find(KANWIL)
-  
+
   if len(list(pagurealisasi_exist)) > 0:
     mongo.db.totals.delete_many(KANWIL)
     mongo.db.pagurealisasi.delete_many(KANWIL)

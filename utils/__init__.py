@@ -18,12 +18,11 @@ def query_to_chart(elements):
 
 def total_to_chart(elements):
   chart = {
-    'label': ['pagu', 'realisasi'],
+    'label': ['sisa pagu', 'realisasi'],
     'data': []
   }
 
   chart['data'].append(elements[0]['pagu'])
   chart['data'].append(elements[0]['realisasi'])
 
-  print(chart)
   return chart
