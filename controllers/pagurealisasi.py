@@ -39,7 +39,7 @@ def store():
     mongo.db.uploads.delete_many({'kanwil': request.form.get('kanwil')})
 
   mongo.db.uploads.insert_one({
-    'kanwil': request.form.get('kanwil'),
+    'kanwil': KANWIL['kdkanwil'],
     'timestamp': time.time(),
     'tanggal': request.form.get('tanggal')
   })

@@ -3,40 +3,49 @@ import pandas as pd
 from configs.mongodb import mongo
 from application import celery
 from application.globals import KANWIL
+import json
+# from .columns_name import InputColumn
 
 @celery.task()
 def store_pagu(filename):
-  df = pd.read_excel(filename, header=3, engine='openpyxl')
-  df.columns = ['kode_kanwil', 'kode_kppn', 'kppn', 'kode_satker', 'nama_satker', 'kode_ba', 'akun', 'kode_kabupaten', 'kabupaten', 'dipa', 'blokir', 'outs_kontrak', 'realisasi']
+  df = pd.read_excel(filename, header=4, engine='openpyxl')
+  df.columns = ['no','kddept','nmdept','kddekon','nmdekon','kdkabkota','nmkabkota','kdkanwil','kdkppn','nmkppn','kdsatker','nmsatker','kdfungsi','nmfungsi','kdprogram','nmprogram','kdgiat','nmgiat','kdoutput','nmoutput','kdakun','nmakun','kdsdana','nmsdana','kat_out','uraian_kat_out','pagu','realisasi','blokir']
 
-  df['kode_kanwil'] = df['kode_kanwil'].apply(str)
-  df['kode_satker'] = df['kode_satker'].apply(str)
-  df['akun'] = df['akun'].apply(str)
-  df['kode_kabupaten'] = df['kode_kabupaten'].apply(str)
+  df['kdkanwil'] = df['kdkanwil'].apply(str)
+  df['kdsatker'] = df['kdsatker'].apply(str)
+  df['kdakun'] = df['kdakun'].apply(str)
+  df['kdkabkota'] = df['kdkabkota'].apply(str)
 
-  df['dipa'].replace(0, 1, inplace=True)
-  df['persentase'] = round(df['realisasi'] / df['dipa'], 4)
+  df['pagu'].replace(0, 1, inplace=True)
+  df['persentase'] = round(df['realisasi'] / df['pagu'], 4)
 
   paguminus_df = df[df['persentase'] > 1]
-  suspense_df = df[df['kode_kabupaten'] == 'ZZZZ']
+  # suspense_df = df[df['kdkabkota'] == 'ZZZZ']
   realisasi_minus_df = df[df['realisasi'] < 0]
 
   total = {
-    'kode_kanwil': df.at[0, 'kode_kanwil'],
-    'pagu': int(str(df['dipa'].sum())),
+    'kdkanwil': df.at[0, 'kdkanwil'],
+    'pagu': int(str(df['pagu'].sum())),
     'realisasi': int(str(df['realisasi'].sum()))
   }
 
-  persatker_df = df.groupby(['kode_satker', 'kode_kanwil'])[['dipa', 'blokir', 'outs_kontrak', 'realisasi']].sum().reset_index()
-  perkabupaten_df = df.groupby(['kode_kabupaten', 'kode_kanwil'])[['dipa', 'blokir', 'outs_kontrak', 'realisasi']].sum().reset_index()
-  perkppn_df = df.groupby(['kode_kppn', 'kode_kanwil'])[['dipa', 'blokir', 'outs_kontrak', 'realisasi']].sum().reset_index()
-  perjenis_belanja = df.groupby([df['akun'].str[:2], 'kode_kanwil'])[['kode_kanwil', 'akun', 'dipa', 'blokir', 'outs_kontrak', 'realisasi']].sum().reset_index()
+  persatker_df = df.groupby(['kdsatker', 'kdkanwil'])[['pagu', 'blokir', 'realisasi']].sum().reset_index()
 
-  refsatker_df = df.groupby(['kode_satker']).first()[['nama_satker', 'kode_kanwil', 'kode_kppn', 'kode_ba', 'kode_kabupaten']].reset_index()
-  refkabupaten_df = df.groupby(['kode_kabupaten']).first()[['kabupaten', 'kode_kanwil', 'kode_kppn']].reset_index()
-  refkppn_df = df.groupby(['kode_kppn']).first()[['kppn', 'kode_kanwil']].reset_index()
+  perkabupaten_df = df.groupby(['kdkabkota', 'kdkanwil'])[['pagu', 'blokir', 'realisasi']].sum().reset_index()
+  perkabupaten_df['persentase'] = round(perkabupaten_df['realisasi'] / perkabupaten_df['pagu'], 4)
 
-  perjenis_belanja['jenis'] = perjenis_belanja['akun'].apply(lambda x: 'Belanja Pegawai' if x == '51' else ('Belanja Barang' if x == '52' else ('Belanja Modal' if x == '53' else ('Belanja Bansos' if x == '57' else ('DAK Fisik' if x == '63' else ('DAK Nonfisik' if x == '65' else 'Dana Desa'))))))
+  perkppn_df = df.groupby(['kdkppn', 'kdkanwil'])[['pagu', 'blokir', 'realisasi']].sum().reset_index()
+  perkppn_df['persentase'] = round(perkppn_df['realisasi'] / perkppn_df['pagu'], 4)
+
+  perfungsi_df = df.groupby(['kdfungsi', 'kdkanwil'])[['pagu', 'blokir', 'realisasi']].sum().reset_index()
+
+  perjenis_belanja = df.groupby([df['kdakun'].str[:2], 'kdkanwil'])[['kdkanwil', 'kdakun', 'pagu', 'blokir', 'realisasi']].sum().reset_index()
+
+  refsatker_df = df.groupby(['kdsatker']).first()[['nmsatker', 'kdkanwil', 'kdkppn', 'kddept', 'kdkabkota']].reset_index()
+  refkabupaten_df = df.groupby(['kdkabkota']).first()[['nmkabkota', 'kdkanwil', 'kdkppn']].reset_index()
+  refkppn_df = df.groupby(['kdkppn']).first()[['nmkppn', 'kdkanwil']].reset_index()
+
+  perjenis_belanja['jenis'] = perjenis_belanja['kdakun'].apply(lambda x: 'Belanja Pegawai' if x == '51' else ('Belanja Barang' if x == '52' else ('Belanja Modal' if x == '53' else ('Belanja Bansos' if x == '57' else ('DAK Fisik' if x == '63' else ('DAK Nonfisik' if x == '65' else 'Dana Desa'))))))
 
   pagurealisasi_exist = mongo.db.pagurealisasi.find(KANWIL)
 
@@ -45,7 +54,7 @@ def store_pagu(filename):
     mongo.db.pagurealisasi.delete_many(KANWIL)
     mongo.db.jenis_belanja.delete_many(KANWIL)
     mongo.db.paguminus.delete_many(KANWIL)
-    mongo.db.suspense.delete_many(KANWIL)
+    # mongo.db.suspense.delete_many(KANWIL)
     mongo.db.realisasi_minus.delete_many(KANWIL)
     mongo.db.per_satker.delete_many(KANWIL)
     mongo.db.per_kabupaten.delete_many(KANWIL)
@@ -58,7 +67,7 @@ def store_pagu(filename):
   mongo.db.pagurealisasi.insert_many(df.to_dict(orient='records'))
   mongo.db.jenis_belanja.insert_many(perjenis_belanja.to_dict(orient='records'))
   mongo.db.paguminus.insert_many(paguminus_df.to_dict(orient='records'))
-  mongo.db.suspense.insert_many(suspense_df.to_dict(orient='records'))
+  # mongo.db.suspense.insert_many(suspense_df.to_dict(orient='records'))
   mongo.db.realisasi_minus.insert_many(realisasi_minus_df.to_dict(orient='records'))
   mongo.db.per_satker.insert_many(persatker_df.to_dict(orient='records'))
   mongo.db.per_kabupaten.insert_many(perkabupaten_df.to_dict(orient='records'))

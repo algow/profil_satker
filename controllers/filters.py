@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from bson.json_util import dumps
 from configs.mongodb import mongo
 from application.globals import KANWIL
@@ -27,8 +27,8 @@ def perkabupaten():
     {
       '$lookup': {
         'from': 'ref_kabupaten',
-        'localField': 'kode_kabupaten',
-        'foreignField': 'kode_kabupaten',
+        'localField': 'kdkabkota',
+        'foreignField': 'kdkabkota',
         'as': 'referensi'
       }
     }]))
@@ -47,8 +47,8 @@ def perkppn():
     {
       '$lookup': {
         'from': 'ref_kppn',
-        'localField': 'kode_kppn',
-        'foreignField': 'kode_kppn',
+        'localField': 'kdkppn',
+        'foreignField': 'kdkppn',
         'as': 'referensi'
       }
     }]))
