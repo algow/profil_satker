@@ -94,17 +94,17 @@ def chart_jenisbelanja_persatker():
   chart_data = list(mongo.db.pagurealisasi.aggregate([
   {
     '$match': {
-      'kode_kanwil': request.args.get('kanwil'),
-      'kode_satker': request.args.get('satker')
+      'kdkanwil': request.args.get('kanwil'),
+      'kdsatker': request.args.get('satker')
     }
   },
   {
     '$project': {
-      'kode_satker': 1,
+      'kdsatker': 1,
       'realisasi': 1,
       'pagu': 1,
       'jenisbelanja': {
-        '$substr': ["$akun", 0, 2]
+        '$substr': ["$kdakun", 0, 2]
       }
     }
   },
@@ -122,5 +122,5 @@ def chart_jenisbelanja_persatker():
   ]))
   # except:
   #   print('error')
-
+  print(chart_data)
   return dumps(query_to_chart(chart_data))
